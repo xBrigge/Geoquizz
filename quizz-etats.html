@@ -537,19 +537,25 @@ function handleClick(evt) {
 
     setTimeout(setNewQuestion, 800);
   } else {
-    streak = 0;
-    clickedPath.classList.add('wrong');
-    document.getElementById('result').textContent = '❌ Mauvaise réponse';
+  streak = 0;
+  clickedPath.classList.add('wrong');
 
-    const correctPath = document.getElementById(target.id);
-    correctPath.classList.add('highlight');
+  // Trouver le nom de l'état cliqué
+  const clickedState = states.find(state => state.id === clickedId);
+  const clickedName = clickedState ? clickedState.name : clickedId;
 
-    setTimeout(() => {
-      correctPath.classList.remove('highlight');
-      setNewQuestion();
-    }, 1000);
-  }
+  document.getElementById('result').textContent = `❌ Dommage, tu as cliqué sur ${clickedName}`;
+
+  const correctPath = document.getElementById(target.id);
+  correctPath.classList.add('highlight');
+
+  setTimeout(() => {
+    correctPath.classList.remove('highlight');
+    setNewQuestion();
+  }, 1000);
 }
+}
+
 
 
 
