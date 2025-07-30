@@ -1,0 +1,145 @@
+/* style.css */
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  background: linear-gradient(135deg, #a8edea, #fed6e3);
+  color: #222;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+header {
+  background-color: #4a90e2;
+  color: white;
+  width: 100%;
+  padding: 1.5rem 0;
+  text-align: center;
+  font-size: 2.4rem;
+  font-weight: 700;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+
+.container {
+  padding: 2rem;
+  max-width: 900px;
+  width: 90%;
+}
+
+button {
+  background-color: #4a90e2;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  padding: 0.8rem 1.4rem;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #357ABD;
+}
+
+button:focus {
+  outline: 2px solid #235b8a;
+  outline-offset: 2px;
+}
+
+#quiz-container {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#score {
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+#target-name {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
+
+#result {
+  margin-top: 0.5rem;
+  font-weight: 600;
+}
+
+#timer {
+  margin-top: 0.5rem;
+  font-style: italic;
+  color: #555;
+}
+
+/* States map styles */
+path.state {
+  cursor: pointer;
+  fill: #a8a8a8;
+  stroke: white;
+  stroke-width: 1.5;
+  transition: fill 0.3s ease;
+}
+
+path.state:hover {
+  fill: #4a90e2;
+}
+
+path.state.correct {
+  fill: #4CAF50 !important;
+}
+
+path.state.wrong {
+  fill: #f44336 !important;
+}
+
+path.state.highlight {
+  stroke: #ffeb3b !important;
+  stroke-width: 3;
+  fill: green;
+}
+
+#end-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6); /* fond noir semi-transparent */
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.end-box {
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+  max-width: 400px;
+  width: 80%;
+}
+
+.quiz-card {
+  /* ... ton style existant ... */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+}
+
+.quiz-image {
+  width: 100%;
+  max-width: 200px;
+  height: auto;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  object-fit: cover;
+}
