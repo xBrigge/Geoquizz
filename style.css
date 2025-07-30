@@ -67,6 +67,8 @@ button:focus {
 }
 
 #result {
+  font-size: 1.5em; /* ou une taille que tu préfères, ex: 20px, 24px... */
+  font-weight: bold; /* si tu veux aussi le texte en gras */
   margin-top: 0.5rem;
   font-weight: 600;
 }
@@ -143,3 +145,5 @@ path.state.highlight {
   margin-bottom: 1rem;
   object-fit: cover;
 }
+
+
