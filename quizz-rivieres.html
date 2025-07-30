@@ -1738,7 +1738,7 @@ document.getElementById('startBtn').addEventListener('click', () => {
   document.getElementById('startBtn').style.display = 'none';
 
   // Afficher les éléments du quiz
-  document.querySelector('.quiz-geographie').style.display = 'block';
+  
   document.getElementById('score').style.display = 'block';
   document.getElementById('result').style.display = 'block';
   document.getElementById('timer').style.display = 'block';
@@ -1853,8 +1853,8 @@ function setNewQuestion() {
    startTimer();
   questionCount++;
   if (questionCount > maxQuestions) {
+    stopTimer();
     showEndScreen();
-	stopTimer();
     return;
   }
 
@@ -1928,7 +1928,10 @@ if (elapsedSeconds < 2) {
     const correctEl = document.getElementById(targetRiver);
     if (correctEl) correctEl.classList.add('highlight');
 
-    document.getElementById('result').textContent = `❌ Mauvaise réponse ! C'était ${riverNames[targetRiver]}.`;
+    const clickedName = riverNames[clickedId] || clickedId;
+const targetName = riverNames[targetRiver];
+
+document.getElementById('result').textContent = `❌ Dommage, tu as cliqué sur ${clickedName}.`;
     updateScoreDisplay();
 
     setTimeout(() => {

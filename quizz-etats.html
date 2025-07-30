@@ -475,6 +475,9 @@ function restartGame() {
   setNewQuestion();
 }
   
+function stopTimer() {
+  clearInterval(timerInterval);
+}
   
   function setNewQuestion() {
   // Déverrouille les clics
@@ -489,8 +492,8 @@ function restartGame() {
 
   // Vérifie la fin de partie
   if (questionCount > maxQuestions) {
-    showEndScreen();
     stopTimer();
+    showEndScreen();
     return;
   }
 
