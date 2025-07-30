@@ -6,6 +6,11 @@
 <title>GeoQuizz - Accueil</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
 <style>
+  .logo {
+  height: 150px;     /* ou la taille que tu veux */
+  width: auto;      /* garde les proportions */
+}
+
   body {
     font-family: 'Poppins', sans-serif;
     margin: 0; padding: 0;
@@ -15,17 +20,25 @@
     display: flex;
     flex-direction: column;
   }
-  header {
-    background: linear-gradient(90deg, #2563eb, #3b82f6);
-    color: white;
-    padding: 2rem 1rem;
-    text-align: center;
-    font-size: 2.6rem;
-    font-weight: 600;
-    letter-spacing: 3px;
-    box-shadow: 0 4px 8px rgba(37, 99, 235, 0.4);
-    user-select: none;
-  }
+header {
+  background: linear-gradient(90deg, #2563eb, #3b82f6);
+  color: white;
+  padding: 0.5rem 1rem; /* ↓ réduit le padding vertical */
+  text-align: center;
+  font-size: 2.2rem; /* ↓ optionnel : légèrement réduit la taille du texte */
+  font-weight: 600;
+  letter-spacing: 2px;
+  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.4);
+  user-select: none;
+}
+
+header img {
+  max-height: 150px;     /* ↓ taille du logo */
+  display: block;       /* élimine l’espace bas */
+  margin: 0 auto;       /* centre l’image horizontalement */
+}
+
+  
   main {
     max-width: 900px;
     margin: 2rem auto 4rem;
@@ -186,7 +199,7 @@
 </head>
 <body>
 
-<header>GeoQuizz</header>
+<header> <img src="logo.png" class="logo"></header>
 
 <main>
   <p class="welcome-text">

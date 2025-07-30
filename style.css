@@ -12,14 +12,23 @@ body {
 }
 
 header {
-  background-color: #4a90e2;
+  background: linear-gradient(90deg, #2563eb, #3b82f6);
   color: white;
-  width: 100%;
-  padding: 1.5rem 0;
+  padding: 0.5rem 1rem; /* ↓ réduit le padding vertical */
   text-align: center;
-  font-size: 2.4rem;
-  font-weight: 700;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+  font-size: 2.2rem; /* ↓ optionnel : légèrement réduit la taille du texte */
+  font-weight: 600;
+  letter-spacing: 2px;
+  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.4);
+  user-select: none;
+  display: block;
+width: 100%;
+}
+
+header img {
+  max-height: 150px;     /* ↓ taille du logo */
+  display: block;       /* élimine l’espace bas */
+  margin: 0 auto;       /* centre l’image horizontalement */
 }
 
 .container {
