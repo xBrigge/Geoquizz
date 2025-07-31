@@ -405,8 +405,9 @@
   { id: 'WY', name: 'Wyoming' }
     ];
         
-        const maxQuestions = 10;
+        const maxQuestions = 47;
         let questionCount = 0;
+        let usedStates = []; // liste des états déjà posés
         let isLocked = false; 
         let target = null;
 
@@ -439,6 +440,7 @@
             document.getElementById('startBtn').style.display = 'none'; 
 
             // Afficher les éléments du quiz
+            document.getElementById('timer').textContent = '⏱ Temps : 0.0 s';
             document.getElementById('targetName').style.display = 'block';
             document.getElementById('score').style.display = 'block';
             document.getElementById('result').style.display = 'block';
@@ -535,7 +537,9 @@
         setNewQuestion();
     }
   
+    function sameQuestion() {
 
+    }
   
     function setNewQuestion() {
         // Déverrouille les clics
@@ -545,26 +549,20 @@
         document.querySelectorAll('path.state').forEach(path => {
         path.classList.remove('correct', 'wrong', 'highlight');
         });
-        startTimer();
         questionCount++;
 
-      // Vérifie la fin de partie
-        if (questionCount > maxQuestions) {
+
+        // Tire un nouvel état (jamais demandé avant)
+        target = pickRandom();
+        // Met fin à la partie si tous les États ont été joués
+        if (!target) {
             stopTimer();
             showEndScreen();
             return;
         }
 
-        // Tire un nouvel état (jamais demandé avant)
-        target = pickRandom();
-        if (!target) {
-            alert(`Tous les États ont été joués. Score final : ${score}`);
-            return;
-        }
-
         document.getElementById('target-name').textContent = target.name;
         document.getElementById('result').textContent = '';
-        document.getElementById('timer').textContent = '⏱ Temps : 0.0 s';
     }
 
     function handleClick(evt) {
@@ -574,7 +572,8 @@
         const clickedPath = evt.target;
         const clickedId = clickedPath.id;
         
-         const clickedState = states.find(state => state.id === clickedId);
+
+        const clickedState = states.find(state => state.id === clickedId);
 
         // Si le clic est invalide (rien trouvé), on ne bloque pas le jeu
         if (!clickedState) {
@@ -582,51 +581,46 @@
             return;
         }
 
-         
-
-
-        if (!clickedId) return;
-
-        const isCorrect = clickedId === target.id;
-
-        clearInterval(timerInterval);
-        const timeTaken = (Date.now() - timerStart) / 1000;
-  
-        let timeBonus = 0;
-        if (timeTaken < 2) timeBonus = 2;
-        else if (timeTaken < 5) timeBonus = 1;
-
-        if (isCorrect) {
-            streak++;
-            const streakBonus = streak > 1 ? streak - 1 : 0;
-            const totalPoints = 1 + streakBonus + timeBonus;
-            score += totalPoints;
-
-            clickedPath.classList.add('correct');
-            document.getElementById('result').textContent = `✅ Bonne réponse ! +${totalPoints} pts (${timeBonus} bonus temps)`;
-            updateScore();
-            setTimeout(setNewQuestion, 800);
-        } 
         
-        else {
-            streak = 0;
-            clickedPath.classList.add('wrong');
+        if (!clickedId) {
+            isLocked = false;
+            return;
+        }
 
-        // Trouver le nom de l'état cliqué
+    const isCorrect = clickedId === target.id;
+
+    if (!isCorrect) {
+        streak = 0;
+        clickedPath.classList.add('wrong');
+
         const clickedState = states.find(state => state.id === clickedId);
         const clickedName = clickedState ? clickedState.name : clickedId;
 
         document.getElementById('result').textContent = `❌ Dommage, tu as cliqué sur ${clickedName}`;
 
-        const correctPath = document.getElementById(target.id);
-        correctPath.classList.add('highlight');
-
+        // Attendre un peu avant de réactiver les clics
         setTimeout(() => {
-            correctPath.classList.remove('highlight');
-            setNewQuestion();
-        }, 1000);
-        }
+            isLocked = false;
+        }, 200);
+
+        return; // On ne va pas plus loin si c’est faux
     }
+
+    // Sinon c’est correct !
+    streak++;
+    const streakBonus = streak > 1 ? streak - 1 : 0;
+    const totalPoints = 1 + streakBonus;
+    score += totalPoints;
+
+    clickedPath.classList.add('correct');
+    document.getElementById('result').textContent = `✅ Bonne réponse ! +${totalPoints} pts `;
+    updateScore();
+
+    setTimeout(() => {
+        setNewQuestion();   // On passe à la prochaine question
+        isLocked = false;   // Déverrouiller pour la prochaine
+    }, 500);
+}
 
 
 

@@ -62,7 +62,7 @@ header img {
     background: white;
     border-radius: 16px;
     box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
-    width: 240px;
+    width: 340px;
     cursor: pointer;
     display: flex;
     flex-direction: column;
@@ -93,7 +93,7 @@ header img {
     color: white;
     border: none;
     border-radius: 10px;
-    padding: 0.55rem 1.2rem;
+    padding: 0.50rem 0.5rem;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
@@ -212,6 +212,7 @@ header img {
       <img src="carte-usa.jpg" alt="Illustration États" class="quiz-image">
       <div class="quiz-buttons">
         <button class="btn" id="start-etats">Démarrer</button>
+        <button class="btn" id="practice-etats"> S'entraîner </button>
         <button class="btn" id="scores-etats">Scores</button>
       </div>
     </div>
@@ -283,6 +284,9 @@ header img {
   // Boutons démarrer / scores
   document.getElementById('start-etats').addEventListener('click', () => {
     window.location.href = 'quizz-etats.html';;
+  });
+   document.getElementById('practice-etats').addEventListener('click', () => {
+    window.location.href = 'practice_etats.html';;
   });
   document.getElementById('scores-etats').addEventListener('click', () => {
     alert('Afficher le tableau des scores (à implémenter) !');
