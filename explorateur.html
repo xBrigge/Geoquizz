@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Recherche villes françaises</title>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    a { text-decoration: none; color: #0066cc; }
+    a:hover { text-decoration: underline; }
+    #resultats p { margin: 5px 0; }
+  </style>
+</head>
+<body>
+
+  <h1>Liste des villes françaises (≥ 5000 habitants)</h1>
+
+  <div id="resultats">Chargement des villes...</div>
+
+  <script>
+    Papa.parse("villes.csv", {
+      download: true,
+      header: true,
+      complete: function(results) {
+        const rawData = results.data;
+
+        const villes = rawData
+          .filter(v => v.population && Number(v.population) >= 5000)
+          .map(v => ({
+            nom: v.nom_standard,
+            code_postal: v.code_postal,
+            population: Number(v.population),
+            latitude: Number(v.latitude_mairie),
+            longitude: Number(v.longitude_mairie),
+            url: v.url_wikipedia || "#"
+          }));
+
+        const conteneur = document.getElementById("resultats");
+
+        if (villes.length === 0) {
+          conteneur.innerHTML = "<p>Aucune ville trouvée.</p>";
+          return;
+        }
+
+        conteneur.innerHTML = villes.slice(0, 50).map(v => 
+          `<p>
+             <a href="${v.url}" target="_blank" rel="noopener noreferrer">
+               ${v.nom} (${v.code_postal}) - ${v.population.toLocaleString()} hab.
+             </a>
+           </p>`
+        ).join("");
+      },
+      error: function(err) {
+        document.getElementById("resultats").innerHTML = `<p>Erreur lors du chargement du fichier CSV : ${err.message}</p>`;
+      }
+    });
+  </script>
+
+</body>
+</html>

@@ -62,7 +62,7 @@ header img {
     background: white;
     border-radius: 16px;
     box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
-    width: 340px;
+    width: 240px;
     cursor: pointer;
     display: flex;
     flex-direction: column;
@@ -72,6 +72,24 @@ header img {
     position: relative;
     perspective: 1000px;
   }
+
+  .quiz-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 10px;
+}
+
+.quiz-image-link {
+  display: block;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+  .quiz-card a {
+  display: block;
+}
+
   .quiz-card:hover {
     transform: translateY(-8px) rotateX(5deg);
     box-shadow: 0 12px 20px rgb(59 130 246 / 0.3);
@@ -199,7 +217,7 @@ header img {
 </head>
 <body>
 
-<header> <img src="logo.png" class="logo"></header>
+<header> <a href="geoquizz.html"> <img src="logo.png" class="logo"> </a> </header>
 
 <main>
   <p class="welcome-text">
@@ -209,20 +227,20 @@ header img {
   <section class="quizz-list">
     <div class="quiz-card" id="quiz-etats">
       <div class="quiz-title">Quiz États américains</div>
-      <img src="carte-usa.jpg" alt="Illustration États" class="quiz-image">
+      <a href="quizz-etats.html"> <img src="carte-usa.jpg" alt="Illustration États" class="quiz-image"> </a>
       <div class="quiz-buttons">
         <button class="btn" id="start-etats">Démarrer</button>
         <button class="btn" id="practice-etats"> S'entraîner </button>
-        <button class="btn" id="scores-etats">Scores</button>
+        <!-- <button class="btn" id="scores-etats">Scores</button> -->
       </div>
     </div>
 
     <div class="quiz-card" id="quiz-rivieres">
       <div class="quiz-title">Quiz rivières de France </div>
-      <img src="carte-rivieres.jpg" alt="Illustration rivières" class="quiz-image">
+      <a href="quizz-rivieres.html"> <img src="carte-rivieres.jpg" alt="Illustration rivières" class="quiz-image"> </a>
       <div class="quiz-buttons">
         <button class="btn" id="start-rivieres">Démarrer</button>
-        <button class="btn" id="scores-rivieres">Scores</button>
+        <!-- <button class="btn" id="scores-rivieres">Scores</button> -->
       </div>
     </div>
   </section>
