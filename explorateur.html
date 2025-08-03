@@ -24,12 +24,20 @@
     <input type="text" id="inputCodePostal" required pattern="\d{5}" title="5 chiffres requis"/>
   </label>
   <label>
+    Distance min en km (ex: 0) :
+    <input type="number" id="inputDistanceMin" value="0" min="0" />
+  </label>
+  <label>
     Distance max en km (ex: 50) :
     <input type="number" id="inputDistance" value="50" min="1" required />
   </label>
   <label>
     Population min (ex: 10000) :
-    <input type="number" id="inputPopulation" value="10000" min="1" required />
+    <input type="number" id="inputPopulationMin" value="10000" min="0" />
+  </label>
+  <label>
+    Population max (ex: 200000) :
+    <input type="number" id="inputPopulationMax" min="0" />
   </label>
   <button type="submit">Rechercher</button>
 </form>
@@ -58,7 +66,7 @@
     header: true,
     complete: function(results) {
       villes = results.data
-        .filter(v => v.population && Number(v.population) >= 1)  // On garde toutes les villes valides
+        .filter(v => v.population && Number(v.population) >= 1)
         .map(v => ({
           nom: v.nom_standard,
           code_postal: v.code_postal,
@@ -80,11 +88,21 @@
     e.preventDefault();
 
     const codePostalRecherche = document.getElementById("inputCodePostal").value.trim();
+    const distMin = Number(document.getElementById("inputDistanceMin").value) || 0;
     const distMax = Number(document.getElementById("inputDistance").value);
-    const popMin = Number(document.getElementById("inputPopulation").value);
+    const popMin = Number(document.getElementById("inputPopulationMin").value) || 0;
+    const popMaxInput = document.getElementById("inputPopulationMax").value.trim();
+    const popMax = popMaxInput === "" ? Infinity : Number(popMaxInput);
 
-    // Trouver la ville centre correspondant au code postal
-    // Certaines villes ont plusieurs codes postaux, on ne gère que le champ code_postal principal ici
+    if (distMin > distMax) {
+      alert("La distance min ne peut pas être supérieure à la distance max.");
+      return;
+    }
+    if (popMin > popMax) {
+      alert("La population min ne peut pas être supérieure à la population max.");
+      return;
+    }
+
     const villeCentre = villes.find(v => v.code_postal === codePostalRecherche);
 
     if (!villeCentre) {
@@ -92,14 +110,13 @@
       return;
     }
 
-    // Filtrer villes selon distance et population
     const villesTrouvees = villes.filter(v => {
-      if (v.population < popMin) return false;
+      if (v.population < popMin || v.population > popMax) return false;
       const dist = haversineDistance(
         villeCentre.latitude, villeCentre.longitude,
         v.latitude, v.longitude
       );
-      return dist <= distMax;
+      return dist >= distMin && dist <= distMax;
     });
 
     if (villesTrouvees.length === 0) {
@@ -107,9 +124,8 @@
       return;
     }
 
-    // Affichage des résultats
     const html = villesTrouvees
-      .sort((a, b) => b.population - a.population) // Tri décroissant population
+      .sort((a, b) => b.population - a.population)
       .map(v => `
         <p>
           <a href="${v.url}" target="_blank" rel="noopener noreferrer">
