@@ -1,151 +1,141 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8" />
-<title>Villes avec score Wikipedia - CSV réel</title>
-<style>
-  body { font-family: Arial, sans-serif; margin: 20px; }
-  label { display: inline-block; margin: 5px 10px 5px 0; }
-  input { margin-right: 10px; }
-  #resultats p { margin: 5px 0; }
-  .wikiScore { font-weight: bold; color: #1a73e8; }
-</style>
+  <meta charset="UTF-8" />
+  <title>Recherche villes françaises par distance</title>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 700px; margin: auto; }
+    a { color: #0066cc; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    label { display: block; margin-top: 15px; }
+    input[type="text"], input[type="number"] { width: 100%; padding: 8px; margin-top: 5px; }
+    button { margin-top: 15px; padding: 10px 20px; }
+    #resultats p { margin: 7px 0; }
+  </style>
 </head>
 <body>
 
-<h2>Recherche de villes françaises</h2>
-<label>Population min : <input type="number" id="popMin" value="10000" /></label>
-<label>Distance max (km) : <input type="number" id="distMax" value="50" /></label>
-<label>Code postal de départ : <input type="text" id="codePostal" value="75000" /></label>
-<button id="btnChercher">Chercher</button>
+<h1>Recherche de villes autour d’un code postal</h1>
 
-<div id="resultats" style="margin-top:20px;">Résultats ici...</div>
+<form id="formRecherche">
+  <label>
+    Code postal (ex: 75000) :
+    <input type="text" id="inputCodePostal" required pattern="\d{5}" title="5 chiffres requis"/>
+  </label>
+  <label>
+    Distance min en km (ex: 0) :
+    <input type="number" id="inputDistanceMin" value="0" min="0" />
+  </label>
+  <label>
+    Distance max en km (ex: 50) :
+    <input type="number" id="inputDistance" value="50" min="1" required />
+  </label>
+  <label>
+    Population min (ex: 10000) :
+    <input type="number" id="inputPopulationMin" value="10000" min="0" />
+  </label>
+  <label>
+    Population max (ex: 200000) :
+    <input type="number" id="inputPopulationMax" min="0" />
+  </label>
+  <button type="submit">Rechercher</button>
+</form>
+
+<div id="resultats">Chargement des données...</div>
 
 <script>
-// Distance Haversine en km
-function distance(lat1, lon1, lat2, lon2) {
-  const R = 6371;
-  const dLat = (lat2-lat1)*Math.PI/180;
-  const dLon = (lon2-lon1)*Math.PI/180;
-  const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
-  const c = 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R*c;
-}
+  let villes = [];
 
-// Charger CSV (requête fetch)
-async function loadCSV(url) {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error("Erreur chargement CSV");
-  const text = await response.text();
-  return text;
-}
-
-// Parser CSV simple (séparateur tabulation \t ici)
-function parseCSV(text) {
-  const lines = text.trim().split('\n');
-  const headers = lines[0].split('\t');
-
-  return lines.slice(1).map(line => {
-    const cols = line.split('\t');
-    const obj = {};
-    headers.forEach((h,i) => obj[h] = cols[i]);
-    return obj;
-  });
-}
-
-// Trouver coordonnées ville de départ par code postal (prend 1ère ville trouvée)
-function findCoordByCodePostal(data, cp) {
-  const ville = data.find(v => v.code_postal === cp || (v.codes_postaux && v.codes_postaux.includes(cp)));
-  if (!ville) return null;
-  return { lat: parseFloat(ville.latitude_mairie), lon: parseFloat(ville.longitude_mairie) };
-}
-
-async function getWikiExtractLength(wikiUrl) {
-  try {
-    if (!wikiUrl) return 0;
-    const title = wikiUrl.split('/wiki/')[1];
-    if (!title) return 0;
-    const apiUrl = `https://fr.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=extracts&explaintext=1&titles=${encodeURIComponent(title)}`;
-    const response = await fetch(apiUrl);
-    if (!response.ok) return 0;
-    const data = await response.json();
-    const pages = data.query.pages;
-    const pageId = Object.keys(pages)[0];
-    if (pageId === "-1") return 0;
-    const extract = pages[pageId].extract || "";
-    return extract.length;
-  } catch (e) {
-    console.warn("Erreur fetch wiki :", e);
-    return 0;
-  }
-}
-
-async function afficherVillesAvecScore(villes) {
-  const maxVillesApi = 20;
-  villes.forEach(v => v.wikiScore = 0);
-
-  const container = document.getElementById("resultats");
-  container.innerHTML = villes.map(v => `
-    <p data-nom="${v.nom_standard}">
-      <a href="${v.url_wikipedia}" target="_blank" rel="noopener noreferrer">${v.nom_standard} (${v.code_postal}) - ${Number(v.population).toLocaleString()} hab.</a>
-      <span class="wikiScore" style="float:right;">⏳</span>
-    </p>
-  `).join("");
-
-  const villesApi = villes.slice(0, maxVillesApi);
-  await Promise.all(villesApi.map(async (ville) => {
-    ville.wikiScore = await getWikiExtractLength(ville.url_wikipedia);
-  }));
-
-  villes.sort((a,b) => b.wikiScore - a.wikiScore);
-
-  container.innerHTML = villes.map(v => `
-    <p>
-      <a href="${v.url_wikipedia}" target="_blank" rel="noopener noreferrer">${v.nom_standard} (${v.code_postal}) - ${Number(v.population).toLocaleString()} hab.</a>
-      <span class="wikiScore" style="float:right;">Score: ${(v.wikiScore/1000).toFixed(1)}</span>
-    </p>
-  `).join("");
-}
-
-document.getElementById("btnChercher").addEventListener("click", async () => {
-  const popMin = parseInt(document.getElementById("popMin").value) || 0;
-  const distMax = parseFloat(document.getElementById("distMax").value) || 9999;
-  const codePostal = document.getElementById("codePostal").value.trim();
-
-  document.getElementById("resultats").innerText = "Chargement du fichier CSV...";
-  let data;
-  try {
-    const csvText = await loadCSV("villes.csv");
-    data = parseCSV(csvText);
-  } catch (e) {
-    document.getElementById("resultats").innerText = "Erreur chargement du fichier CSV.";
-    return;
+  // Fonction de calcul de distance (Haversine)
+  function haversineDistance(lat1, lon1, lat2, lon2) {
+    const toRad = angle => angle * Math.PI / 180;
+    const R = 6371; // km
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a = Math.sin(dLat/2)**2 +
+              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+              Math.sin(dLon/2)**2;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
   }
 
-  const coord = findCoordByCodePostal(data, codePostal);
-  if (!coord) {
-    document.getElementById("resultats").innerText = "Code postal de départ introuvable.";
-    return;
-  }
+  // Chargement du CSV
+  Papa.parse("villes.csv", {
+    download: true,
+    header: true,
+    complete: function(results) {
+      villes = results.data
+        .filter(v => v.population && Number(v.population) >= 1)
+        .map(v => ({
+          nom: v.nom_standard,
+          code_postal: v.code_postal,
+          population: Number(v.population),
+          latitude: Number(v.latitude_mairie),
+          longitude: Number(v.longitude_mairie),
+          url: v.url_wikipedia || "#"
+        }));
 
-  // Filtrer villes selon population & distance
-  const villesFiltree = data.filter(v => {
-    const pop = Number(v.population) || 0;
-    const lat = parseFloat(v.latitude_mairie);
-    const lon = parseFloat(v.longitude_mairie);
-    if (isNaN(lat) || isNaN(lon)) return false;
-    if (pop < popMin) return false;
-    const dist = distance(coord.lat, coord.lon, lat, lon);
-    return dist <= distMax;
+      document.getElementById("resultats").innerHTML = "<p>Prêt, entre un code postal et tes critères.</p>";
+    },
+    error: function(err) {
+      document.getElementById("resultats").innerHTML = `<p>Erreur lors du chargement du fichier CSV : ${err.message}</p>`;
+    }
   });
 
-  if (villesFiltree.length === 0) {
-    document.getElementById("resultats").innerText = "Aucune ville trouvée avec ces critères.";
-    return;
-  }
+  // Recherche sur formulaire
+  document.getElementById("formRecherche").addEventListener("submit", e => {
+    e.preventDefault();
 
-  await afficherVillesAvecScore(villesFiltree);
-});
+    const codePostalRecherche = document.getElementById("inputCodePostal").value.trim();
+    const distMin = Number(document.getElementById("inputDistanceMin").value) || 0;
+    const distMax = Number(document.getElementById("inputDistance").value);
+    const popMin = Number(document.getElementById("inputPopulationMin").value) || 0;
+    const popMaxInput = document.getElementById("inputPopulationMax").value.trim();
+    const popMax = popMaxInput === "" ? Infinity : Number(popMaxInput);
+
+    if (distMin > distMax) {
+      alert("La distance min ne peut pas être supérieure à la distance max.");
+      return;
+    }
+    if (popMin > popMax) {
+      alert("La population min ne peut pas être supérieure à la population max.");
+      return;
+    }
+
+    const villeCentre = villes.find(v => v.code_postal === codePostalRecherche);
+
+    if (!villeCentre) {
+      document.getElementById("resultats").innerHTML = `<p>Code postal introuvable dans la base.</p>`;
+      return;
+    }
+
+    const villesTrouvees = villes.filter(v => {
+      if (v.population < popMin || v.population > popMax) return false;
+      const dist = haversineDistance(
+        villeCentre.latitude, villeCentre.longitude,
+        v.latitude, v.longitude
+      );
+      return dist >= distMin && dist <= distMax;
+    });
+
+    if (villesTrouvees.length === 0) {
+      document.getElementById("resultats").innerHTML = `<p>Aucune ville trouvée répondant aux critères.</p>`;
+      return;
+    }
+
+    const html = villesTrouvees
+      .sort((a, b) => b.population - a.population)
+      .map(v => `
+        <p>
+          <a href="${v.url}" target="_blank" rel="noopener noreferrer">
+            ${v.nom} (${v.code_postal}) - ${v.population.toLocaleString()} hab.
+          </a>
+        </p>
+      `).join("");
+
+    document.getElementById("resultats").innerHTML = html;
+  });
 </script>
 
 </body>
