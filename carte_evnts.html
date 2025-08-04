@@ -1,60 +1,131 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <title>Carte Histoire</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <meta charset="UTF-8">
+  <title>Carte des Événements Historiques</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- noUiSlider -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.js"></script>
+
   <style>
-    #map { height: 90vh; width: 100%; }
     body { margin: 0; font-family: sans-serif; }
+    #map { height: 80vh; width: 100%; }
+    #controls {
+      padding: 10px;
+      background: #f4f4f4;
+    }
+    #slider {
+      margin: 20px 0;
+    }
   </style>
 </head>
 <body>
-  <h2 style="text-align:center;">Carte des événements historiques</h2>
-  <div id="map"></div>
 
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script>
-    // Init carte centrée sur le monde
-    const map = L.map('map', {
-  center: [20, 0],
-  zoom: 2,
-  worldCopyJump: false, // ← Ne saute pas vers l'autre copie
-  maxBounds: [[-85, -180], [85, 180]], // ← Empêche de sortir de la mappemonde
-  maxBoundsViscosity: 1.0 // ← Force à rester dans les limites
-});
+<div id="controls">
+  <h3>Filtrer par période historique</h3>
+  <div id="slider"></div>
+  <p>Afficher les événements entre <strong id="sliderStart">1900</strong> et <strong id="sliderEnd">2025</strong></p>
+</div>
 
-    // Fond de carte (gratuit)
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+<div id="map"></div>
 
-    // Exemple : poignée de main en Corée du Nord/Sud
-    const events = [
+<script>
+// === Données d'exemple ===
+const events = [
   {
-    name: "Poignée de main entre les deux Corées (2018)",
-    lat: 37.9615,
-    lon: 126.6625,
-    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/2018_inter-Korean_summit_04.jpg/320px-2018_inter-Korean_summit_04.jpg"
+    title: "Poignée de main à Panmunjom",
+    date: 2018,
+    lat: 37.9613,
+    lon: 126.6636,
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/2018_inter-Korean_summit_handshake.jpg/640px-2018_inter-Korean_summit_handshake.jpg"
   },
   {
-    name: "Chute du mur de Berlin (1989)",
+    title: "Chute du mur de Berlin",
+    date: 1989,
     lat: 52.5163,
     lon: 13.3777,
-    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Berlin_Wall_Brandenburg_Gate.jpg/320px-Berlin_Wall_Brandenburg_Gate.jpg"
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Berlin_Wall_Brandenburg_Gate.jpg/640px-Berlin_Wall_Brandenburg_Gate.jpg"
+  },
+  {
+    title: "Débarquement en Normandie",
+    date: 1944,
+    lat: 49.4144,
+    lon: -0.8612,
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/NormandySupply_edit.jpg/640px-NormandySupply_edit.jpg"
+  },
+  {
+    title: "Signature de la Déclaration d’indépendance",
+    date: 1776,
+    lat: 39.9489,
+    lon: -75.1500,
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Declaration_independence.jpg/640px-Declaration_independence.jpg"
   }
 ];
 
-    events.forEach(event => {
-  const popupContent = `
-    <strong>${event.name}</strong><br>
-    <img src="${event.image}" alt="${event.name}" style="width:100%;max-width:300px;margin-top:5px;" />
-  `;
+// === Carte Leaflet ===
+const map = L.map('map', {
+  worldCopyJump: true
+}).setView([20, 0], 2);
 
-  L.marker([event.lat, event.lon])
-    .addTo(map)
-    .bindPopup(popupContent);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; OpenStreetMap',
+  maxZoom: 18,
+}).addTo(map);
+
+// === Groupe de marqueurs pour pouvoir les gérer dynamiquement ===
+const markersLayer = L.layerGroup().addTo(map);
+
+// === Fonction : mise à jour des marqueurs affichés selon les dates ===
+function updateMarkersWithRange(start, end) {
+  markersLayer.clearLayers();
+  events
+    .filter(e => e.date >= start && e.date <= end)
+    .forEach(e => {
+      const popupHtml = `
+        <strong>${e.title}</strong><br>
+        <em>${e.date}</em><br>
+        <img src="${e.image}" alt="${e.title}" style="width:100%;max-width:300px;margin-top:5px;" />
+      `;
+      L.marker([e.lat, e.lon])
+        .bindPopup(popupHtml)
+        .addTo(markersLayer);
+    });
+}
+
+// === noUiSlider ===
+const slider = document.getElementById('slider');
+noUiSlider.create(slider, {
+  start: [1900, 2025],
+  connect: true,
+  step: 1,
+  range: {
+    min: 1700,
+    max: 2025
+  },
+  tooltips: [true, true],
+  format: {
+    to: value => Math.round(value),
+    from: value => Math.round(value)
+  }
 });
-  </script>
+
+slider.noUiSlider.on('update', function(values) {
+  const start = parseInt(values[0], 10);
+  const end = parseInt(values[1], 10);
+  document.getElementById('sliderStart').textContent = start;
+  document.getElementById('sliderEnd').textContent = end;
+  updateMarkersWithRange(start, end);
+});
+
+// Initialiser avec tous les marqueurs
+updateMarkersWithRange(1900, 2025);
+</script>
+
 </body>
 </html>
